@@ -1,3 +1,16 @@
+*.classpath
+*.project
+*target
+*.settings
+/test
+app_smell_report.txt
+
+*.DS_Store
+*.factorypath
+
+/execution
+*.csv
+
 # Compiled class file
 *.class
 
