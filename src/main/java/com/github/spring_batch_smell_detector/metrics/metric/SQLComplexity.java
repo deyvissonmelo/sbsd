@@ -42,7 +42,7 @@ public class SQLComplexity extends ASTVisitor implements ClassLevelMetric, Metho
 			
 			if(complexity > 0) {				
 				String id = "String.Literal$" + UUID.randomUUID();
-				sqlQueries.add(sqlFinder.addQuery(id, varValue, SQLQueryFileType.STRING_LITERAL));
+				sqlQueries.add(sqlFinder.addQuery(id, varValue, SQLQueryFileType.STRING_LITERAL, "STRING_LITERAL"));
 				sqlComplexities.add(complexity);
 			}
 		}

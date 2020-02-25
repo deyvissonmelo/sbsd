@@ -173,14 +173,14 @@ public class Runner implements CommandLineRunner {
 			classPrinter.flush();
 		}
 
-		final String[] FILE_QUERY_METRIC_HEADER = { "fileType", "key", "sqlComplexity" };
+		final String[] FILE_QUERY_METRIC_HEADER = { "file", "fileType", "key", "queryType", "sqlComplexity" };
 
 		try (final FileWriter queryWriter = new FileWriter("query_metrics.csv");
 				final CSVPrinter queryPrinter = new CSVPrinter(queryWriter,
 						CSVFormat.DEFAULT.withHeader(FILE_QUERY_METRIC_HEADER));) {
 			SQLQueriesFinder.getLoadedInstance().getQueries().forEach((id, query) -> {
 				try {
-					queryPrinter.printRecord(query.getFileType(), query.getFileKey(), query.getComplexity());
+					queryPrinter.printRecord(query.getFilePath(), query.getFileType(), query.getFileKey(), query.getFileType(), query.getComplexity());
 				} catch (IOException e) {
 					System.out.println("Ocorreu um erro ao criar os arquivo de métricas");
 					e.printStackTrace();

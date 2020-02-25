@@ -99,7 +99,7 @@ public class SQLQueriesFinder {
 				}
 
 				Node sqlAttribute = node.getAttributes().getNamedItem("value");
-				addQuery(key, sqlAttribute.getNodeValue(), SQLQueryFileType.JOB_FILE);					
+				addQuery(key, sqlAttribute.getNodeValue(), SQLQueryFileType.JOB_FILE, jobFilePath);					
 			}
 		}
 	}
@@ -122,7 +122,7 @@ public class SQLQueriesFinder {
 				}
 			}
 			
-			addQuery(key, value, SQLQueryFileType.ALTERNATIVE_FILE);					
+			addQuery(key, value, SQLQueryFileType.ALTERNATIVE_FILE, alternativeQueryFilePath);					
 		}
 	}
 
@@ -134,8 +134,8 @@ public class SQLQueriesFinder {
 		return instance;
 	}
 
-	public UUID addQuery(String key, String query, SQLQueryFileType fileType) {
-		SQLQuery sqlQuery = new SQLQuery(UUID.randomUUID(), key, fileType);
+	public UUID addQuery(String key, String query, SQLQueryFileType fileType, String filePath) {
+		SQLQuery sqlQuery = new SQLQuery(UUID.randomUUID(), key, fileType, filePath);
 		sqlQuery.setQuery(query);	
 		queries.put(sqlQuery.getId(), sqlQuery);
 		

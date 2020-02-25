@@ -26,12 +26,15 @@ public class SQLQuery {
 	
 	private SQLQueryFileType fileType;
 	
+	private String filePath;
+	
 	private int complexity;
 
-	public SQLQuery(UUID id, String fileKey, SQLQueryFileType fileType) {
+	public SQLQuery(UUID id, String fileKey, SQLQueryFileType fileType, String filePath) {
 		this.id = id;
 		this.fileKey = fileKey;
 		this.fileType = fileType;
+		this.filePath = filePath;
 	}
 	
 	public UUID getId() {
@@ -71,6 +74,10 @@ public class SQLQuery {
 	public int getComplexity() {
 		return complexity;
 	}	
+	
+	public String getFilePath() {
+		return filePath;
+	}
 
 	public static Integer calculateSQlComplexity(String value) {
 		if (Strings.isNullOrEmpty(value))

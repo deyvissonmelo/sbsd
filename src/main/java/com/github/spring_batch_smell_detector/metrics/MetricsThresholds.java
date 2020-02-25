@@ -39,6 +39,8 @@ public class MetricsThresholds {
 	
 	private final String STATISTIC_AVERAGE = "average";
 	
+	private final String STATISTIC_STDDEV = "stddev";
+	
 	@Autowired
 	private Environment env;
 	
@@ -89,8 +91,9 @@ public class MetricsThresholds {
 			double min = Double.valueOf(env.getProperty(String.format("%s.%s", key, STATISTIC_MIN)));
 			double average = Double.valueOf(env.getProperty(String.format("%s.%s", key, STATISTIC_AVERAGE)));
 			double max = Double.valueOf(env.getProperty(String.format("%s.%s", key, STATISTIC_MAX)));
+			double stdDev = Double.valueOf(env.getProperty(String.format("%s.%s", key, STATISTIC_STDDEV)));
 			
-			return new MetricStatistics(average, 0, max, min);
+			return new MetricStatistics(average, stdDev, max, min);
 			
 		}
 		catch (NumberFormatException e) {
