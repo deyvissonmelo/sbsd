@@ -30,6 +30,7 @@ import com.github.spring_batch_smell_detector.metrics.CKSpringBatch;
 import com.github.spring_batch_smell_detector.metrics.util.CouplingUtils;
 import com.github.spring_batch_smell_detector.metrics.util.MethodCouplingComposite;
 import com.github.spring_batch_smell_detector.metrics.util.sql.SQLQueriesFinder;
+import com.github.spring_batch_smell_detector.metrics.util.sql.SQLQuery;
 import com.github.spring_batch_smell_detector.model.SmellType;
 import com.github.spring_batch_smell_detector.report.SmellReportBuilder;
 import com.github.spring_batch_smell_detector.smells.AmateurWriter;
@@ -49,34 +50,34 @@ public class Runner implements CommandLineRunner {
 
 	@Autowired
 	private CKSpringBatch ck;
-	
+
 	@Autowired
 	private GlobalProcessor globalProcessor;
-	
+
 	@Autowired
 	private BrainReader brainReader;
 
 	@Autowired
 	private BrainProcessor brainProcessor;
-	
+
 	@Autowired
 	private BrainService brainService;
-	
+
 	@Autowired
 	private BrainWriter brainWriter;
-	
+
 	@Autowired
 	private AmateurWriter amateurWriter;
-	
+
 	@Autowired
 	private ImproperCommunication improperCommunication;
-	
+
 	@Autowired
 	private ReadaholicComponent readaholicComponent;
-	
+
 	@Autowired
 	private SmellReportBuilder reportBuilder;
-	
+
 	public static void main(String[] args) {
 		SpringApplication app = new SpringApplication(Runner.class);
 		app.setBannerMode(Banner.Mode.OFF);
@@ -87,32 +88,36 @@ public class Runner implements CommandLineRunner {
 	public void run(String... args) throws Exception {
 		Options opt = new Options();
 		opt.addOption(new Option("s", false, "Calculate statistics"));
+		opt.addOption(new Option("v", false, "Verbose"));
 
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd = parser.parse(opt, args);
 
 		if (cmd.hasOption("s")) {
-			calculateMetrics(cmd.getArgs());
+			calculateMetrics(cmd.getArgs(), cmd.hasOption('v'));
 		} else {
-			analyseProject(cmd.getArgs());
+			analyseProject(cmd.getArgs(), cmd.hasOption('v'));
 		}
 	}
 
-	private void analyseProject(String[] args) throws ParserConfigurationException, SAXException, IOException {		
-		
+	private void analyseProject(String[] args, boolean verbose)
+			throws ParserConfigurationException, SAXException, IOException {
+
 		ck.calculate(args[0], args[1], args[2], result -> {
 			ckResults.put(result.getId(), result);
 		});
 
-		// printSQLQueries(ckResults);
-		// printDataBaseReaders(ckResults);
-
 		Map<UUID, Set<UUID>> classCouplingTree = CouplingUtils.initialize(ckResults).getCouplingClassMap();
-		System.out.println("*************************CLASS COUPLING******************************");
-		printCoupling(ckResults, classCouplingTree);
-		System.out.println();
-		System.out.println("*************************CLASS METHOD COUPLING******************************");
-		printCouplingMethods(CouplingUtils.getLoadedInstance().getCouplingMethodMap(), 0);
+		
+		if (verbose) {
+			printSQLQueries(ckResults);
+			printDataBaseReaders(ckResults);
+			System.out.println("*************************CLASS COUPLING******************************");
+			printCoupling(ckResults, classCouplingTree);
+			System.out.println();
+			System.out.println("*************************CLASS METHOD COUPLING******************************");
+			printCouplingMethods(CouplingUtils.getLoadedInstance().getCouplingMethodMap(), 0);
+		}
 
 		Set<UUID> awResult = amateurWriter.analyse(ckResults);
 		Set<UUID> bpResult = brainProcessor.analyse(ckResults);
@@ -122,7 +127,7 @@ public class Runner implements CommandLineRunner {
 		Set<UUID> gpResult = globalProcessor.analyse(ckResults);
 		Set<UUID> rcResult = readaholicComponent.analyse(ckResults);
 		Set<UUID> icResult = improperCommunication.analyse(ckResults);
-		
+
 		System.out.println("Global Processor: " + gpResult);
 		System.out.println("Brain Reader: " + brResult);
 		System.out.println("Brain Processor" + bpResult);
@@ -132,24 +137,20 @@ public class Runner implements CommandLineRunner {
 		System.out.println("Amateur Writer" + awResult);
 		System.out.println("Improper Communication" + icResult);
 
-		reportBuilder
-			.printStatistics(true)
-			.addReportSection(SmellType.BRAIN_READER, brResult)
-			.addReportSection(SmellType.BRAIN_PROCESSOR, bpResult)
-			.addReportSection(SmellType.BRAIN_SERVICE, bsResult)
-			.addReportSection(SmellType.BRAIN_WRITER, bwResult)
-			.addReportSection(SmellType.GLOBAL_PROCESSOR, gpResult)
-			.addReportSection(SmellType.AMATEUR_WRITER, awResult)
-			.addReportSection(SmellType.IMPROPER_COMMUNICATION, icResult)
-			.addReportSection(SmellType.READAHOLIC_COMPONENT, rcResult)
-			.print();
-		
+		reportBuilder.printStatistics(true).addReportSection(SmellType.BRAIN_READER, brResult)
+				.addReportSection(SmellType.BRAIN_PROCESSOR, bpResult)
+				.addReportSection(SmellType.BRAIN_SERVICE, bsResult).addReportSection(SmellType.BRAIN_WRITER, bwResult)
+				.addReportSection(SmellType.GLOBAL_PROCESSOR, gpResult)
+				.addReportSection(SmellType.AMATEUR_WRITER, awResult)
+				.addReportSection(SmellType.IMPROPER_COMMUNICATION, icResult)
+				.addReportSection(SmellType.READAHOLIC_COMPONENT, rcResult).print();
+
 	}
 
-	private void calculateMetrics(String[] args) throws ParserConfigurationException, SAXException, IOException {
+	private void calculateMetrics(String[] args, boolean verbose) throws ParserConfigurationException, SAXException, IOException {
 		if (args == null || args.length < 3) {
 			System.out.println("Informe os parâmetros de execução");
-			System.out.println("java -jar spring_batch_smell_detector <project_path> <job_file_path> <query_fle_path>");
+			System.out.println("java -jar spring_batch_smell_detector -s <project_path> <job_file_path> <query_fle_path>");
 			System.exit(1);
 		}
 
@@ -161,6 +162,10 @@ public class Runner implements CommandLineRunner {
 						CSVFormat.DEFAULT.withHeader(FILE_METRIC_HEADER));) {
 			ck.calculate(args[0], args[1], args[2], result -> {
 				try {
+					if(verbose) {
+						printStatistics(result);
+					}
+					
 					classPrinter.printRecord(result.getFile(), result.getClassName(), result.getBatchRole(),
 							result.getLoc(), result.getLcom(), result.getWmc(), result.getMaxNestedBlocks(),
 							result.getCoupling().size(), result.getMaxSqlComplexity());
@@ -180,7 +185,12 @@ public class Runner implements CommandLineRunner {
 						CSVFormat.DEFAULT.withHeader(FILE_QUERY_METRIC_HEADER));) {
 			SQLQueriesFinder.getLoadedInstance().getQueries().forEach((id, query) -> {
 				try {
-					queryPrinter.printRecord(query.getFilePath(), query.getFileType(), query.getFileKey(), query.getFileType(), query.getComplexity());
+					if(verbose) {
+						printQueryStatistics(query);
+					}
+					
+					queryPrinter.printRecord(query.getFilePath(), query.getFileType(), query.getFileKey(),
+							query.getType(), query.getComplexity());
 				} catch (IOException e) {
 					System.out.println("Ocorreu um erro ao criar os arquivo de métricas");
 					e.printStackTrace();
@@ -189,6 +199,34 @@ public class Runner implements CommandLineRunner {
 
 			queryPrinter.flush();
 		}
+	}
+
+	private void printQueryStatistics(SQLQuery result) {
+		System.out.println(result.getFileKey());
+		System.out.println("------------------------------------");
+		System.out.println(String.format("File: %s", result.getFilePath()));
+		System.out.println(String.format("File Key: %s", result.getFileKey()));
+		System.out.println(String.format("File Type: %s", result.getFileType()));
+		System.out.println(String.format("Query Tyoe: %s", result.getType()));		
+		System.out.println(String.format("SQL Complexity: %s", result.getComplexity()));
+		System.out.println("------------------------------------");
+		System.out.println();
+	}
+
+	private void printStatistics(CKClassResultSpringBatch result) {
+		System.out.println(result.getClassName());
+		System.out.println("------------------------------------");
+		System.out.println(String.format("File: %s", result.getFile()));
+		System.out.println(String.format("Class: %s", result.getClassName()));
+		System.out.println(String.format("Role: %s", result.getBatchRole()));
+		System.out.println(String.format("LOC: %s", result.getLoc()));
+		System.out.println(String.format("LCOM: %s", result.getLcom()));
+		System.out.println(String.format("WMC: %s", result.getWmc()));
+		System.out.println(String.format("Max Neasting: %s", result.getMaxNestedBlocks()));
+		System.out.println(String.format("FICP: %s", result.getCoupling().size()));
+		System.out.println(String.format("Max SQL Complexity: %s", result.getMaxSqlComplexity()));
+		System.out.println("------------------------------------");
+		System.out.println();
 	}
 
 	private void printDataBaseReaders(Map<UUID, CKClassResultSpringBatch> ckResults2) {
@@ -243,24 +281,6 @@ public class Runner implements CommandLineRunner {
 		}
 	}
 
-	private void printStatistics(BatchRoleStatistics batchRoleStatistics) {
-		System.out.println(batchRoleStatistics.getRole().name() + " Statistics:");
-
-		batchRoleStatistics.getMetricStatistics().forEach((metric, statistics) -> {
-			System.out.println(metric.name());
-			System.out.println("---------------------------");
-			System.out.println("MIN: " + batchRoleStatistics.getMetricStatistic(metric).getMin());
-			System.out.println("AVERAGE: " + batchRoleStatistics.getMetricStatistic(metric).getAverage());
-			System.out.println("MAX: " + batchRoleStatistics.getMetricStatistic(metric).getMax());
-			System.out
-					.println("STANDARD DEVIATION: " + batchRoleStatistics.getMetricStatistic(metric).getStdDeviation());
-			System.out.println("HIGHER MARGIN: " + batchRoleStatistics.getMetricStatistic(metric).getHigherMargin());
-			System.out.println(
-					"VERY HIGHER MARGIN: " + batchRoleStatistics.getMetricStatistic(metric).getVeryHigherMargin());
-			System.out.println();
-		});
-	}
-
 	private void printSQLQueries(Map<UUID, CKClassResultSpringBatch> classResults) {
 		System.out.println("SQL Queries:");
 		System.out.println("----------------------------------------------");
@@ -292,37 +312,5 @@ public class Runner implements CommandLineRunner {
 				});
 			});
 		});
-	}
-
-	private static void printResults(CKClassResultSpringBatch result) {
-		System.out.println("Class:");
-		System.out.println(result.getClassName());
-		System.out.println();
-		System.out.println("Papeis arquiteturais:");
-		System.out.println(result.getBatchRole());
-		System.out.println("SQL Class");
-		System.out.println(result.getSqlQueries());
-		System.out.println(result.getMaxSqlComplexity());
-		System.out.println("SQL Method");
-		result.getMethods().forEach(m -> {
-			System.out.println(((CKMethodResultSpringBatch) m).getSqlQueries());
-			System.out.println(((CKMethodResultSpringBatch) m).getMaxSqlComplexity());
-		});
-
-		System.out.println("--------------------------------------");
-		System.out.println();
-		System.out.println(String.format("Coupling: %d", result.getCbo()));
-		result.getCoupling().stream().forEach(c -> System.out.println(c));
-		System.out.println();
-		System.out.println("Referências a métodos:");
-		for (CKMethodResult m : result.getMethods()) {
-			System.out.println("Método: " + m.getMethodName());
-			System.out.println("--------------------------------------");
-			((CKMethodResultSpringBatch) m).getMethodInvokeCoupling().stream().forEach(c -> System.out.println(c));
-			System.out.println();
-		}
-		System.out.println("--------------------------------------");
-		System.out.println();
-		System.out.println();
 	}
 }
