@@ -33,13 +33,12 @@ public class MetricsThresholds {
 	
 	private final String METRIC_SQL_COMPLEXITY_KEY = "sqlcomplexity";
 	
-	private final String STATISTIC_MIN = "min";
+	private final String STATISTIC_LOWER = "lower";
 	
-	private final String STATISTIC_MAX = "max";
+	private final String STATISTIC_HIGHER = "higher";
 	
 	private final String STATISTIC_AVERAGE = "average";
 	
-	private final String STATISTIC_STDDEV = "stddev";
 	
 	@Autowired
 	private Environment env;
@@ -88,12 +87,11 @@ public class MetricsThresholds {
 	
 	private MetricStatistics getMetricsStatistics(String key) {
 		try {
-			double min = Double.valueOf(env.getProperty(String.format("%s.%s", key, STATISTIC_MIN)));
+			double lower = Double.valueOf(env.getProperty(String.format("%s.%s", key, STATISTIC_LOWER)));
 			double average = Double.valueOf(env.getProperty(String.format("%s.%s", key, STATISTIC_AVERAGE)));
-			double max = Double.valueOf(env.getProperty(String.format("%s.%s", key, STATISTIC_MAX)));
-			double stdDev = Double.valueOf(env.getProperty(String.format("%s.%s", key, STATISTIC_STDDEV)));
+			double higher = Double.valueOf(env.getProperty(String.format("%s.%s", key, STATISTIC_HIGHER)));
 			
-			return new MetricStatistics(average, stdDev, max, min);
+			return new MetricStatistics(average, higher, lower);
 			
 		}
 		catch (NumberFormatException e) {

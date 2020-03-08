@@ -35,9 +35,9 @@ public class BrainProcessor implements SmellDetector {
 		results.values().stream().forEach(classResult -> {
 			if(classResult.getBatchRole().contains(BatchRole.PROCESSOR)) {
 								
-				boolean isMethodLong =  classResult.getLoc() >= loc.getHigherMargin();
-				boolean isWMCHigh = classResult.getWmc() >= wmc.getHigherMargin();
-				boolean isMaxNestingHigh = classResult.getMaxNestedBlocks() >= maxNeasting.getAverage();
+				boolean isMethodLong =  classResult.getLoc() >= loc.getHigher();
+				boolean isWMCHigh = classResult.getWmc() >= wmc.getHigher();
+				boolean isMaxNestingHigh = classResult.getMaxNestedBlocks() > maxNeasting.getAverage();
 				boolean isLowCoesion = classResult.getLcom() > lcom.getAverage();
 				
 				boolean isAffected = isMethodLong && (isWMCHigh || isMaxNestingHigh) && isLowCoesion;

@@ -43,9 +43,9 @@ public class BrainReader implements SmellDetector {
 		results.values().stream().forEach(classResult -> {
 			if(classResult.getBatchRole().contains(BatchRole.READER)) {
 							
-				boolean isMethodLong =  classResult.getLoc() >= loc.getHigherMargin();
-				boolean isWMCHigh = classResult.getWmc() >= wmc.getAverage();
-				boolean isMaxNestingHigh = classResult.getMaxNestedBlocks() >= maxNeasting.getAverage();
+				boolean isMethodLong =  classResult.getLoc() >= loc.getHigher();
+				boolean isWMCHigh = classResult.getWmc() > wmc.getAverage();
+				boolean isMaxNestingHigh = classResult.getMaxNestedBlocks() > maxNeasting.getAverage();
 				
 				int maxSqlComplexity = classResult.getMaxSqlComplexity();
 				

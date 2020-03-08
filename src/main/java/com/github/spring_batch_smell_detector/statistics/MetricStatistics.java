@@ -4,18 +4,15 @@ public class MetricStatistics {
 	
 	private double average;
 	
-	private double stdDeviation;
+	private double higher;
 	
-	private double max;
-	
-	private double min;
+	private double lower;
 		
-	public MetricStatistics(double average, double stdDeviation, double max, double min) {
+	public MetricStatistics(double average, double higher, double lower) {
 		super();
 		this.average = average;
-		this.stdDeviation = stdDeviation;
-		this.max = max;
-		this.min = min;
+		this.higher = higher;
+		this.lower = lower;
 	}
 
 	public double getAverage() {
@@ -26,39 +23,19 @@ public class MetricStatistics {
 		this.average = average;
 	}
 
-	public double getStdDeviation() {
-		return stdDeviation;
-	}
-
-	public void setStdDeviation(double stdDeviation) {
-		this.stdDeviation = stdDeviation;
-	}
-
-	public double getMax() {
-		return max;
-	}
-
-	public void setMax(double max) {
-		this.max = max;
-	}
-
-	public double getMin() {
-		return min;
-	}
-
-	public void setMin(double min) {
-		this.min = min;
-	}			
-	
-	public double getLowerMargin() {
-		return average - stdDeviation;
-	}		
-	
-	public double getHigherMargin() {
-		return average + stdDeviation;
+	public double getHigher() {
+		return higher;
 	}
 	
-	public double getVeryHigherMargin() {
-		return (average + stdDeviation) * 1.5;
+	public void setHigher(double higher) {
+		this.higher = higher;
+	}
+	
+	public double getLower() {
+		return lower;
+	}
+	
+	public void setLower(double lower) {
+		this.lower = lower;
 	}
 }

@@ -23,7 +23,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.xml.sax.SAXException;
 
-import com.github.mauricioaniche.ck.CKMethodResult;
 import com.github.spring_batch_smell_detector.metrics.CKClassResultSpringBatch;
 import com.github.spring_batch_smell_detector.metrics.CKMethodResultSpringBatch;
 import com.github.spring_batch_smell_detector.metrics.CKSpringBatch;
@@ -41,7 +40,6 @@ import com.github.spring_batch_smell_detector.smells.BrainWriter;
 import com.github.spring_batch_smell_detector.smells.GlobalProcessor;
 import com.github.spring_batch_smell_detector.smells.ImproperCommunication;
 import com.github.spring_batch_smell_detector.smells.ReadaholicComponent;
-import com.github.spring_batch_smell_detector.statistics.BatchRoleStatistics;
 
 @SpringBootApplication
 public class Runner implements CommandLineRunner {
