@@ -15,6 +15,9 @@ import com.github.spring_batch_smell_detector.metrics.CKClassResultSpringBatch;
 import com.github.spring_batch_smell_detector.metrics.CKMethodResultSpringBatch;
 import com.github.spring_batch_smell_detector.metrics.util.CouplingUtils;
 import com.github.spring_batch_smell_detector.metrics.util.MethodCouplingComposite;
+import com.github.spring_batch_smell_detector.metrics.util.sql.SQLQueriesFinder;
+import com.github.spring_batch_smell_detector.metrics.util.sql.SQLQuery;
+import com.github.spring_batch_smell_detector.metrics.util.sql.SQLQueryType;
 import com.github.spring_batch_smell_detector.model.BatchRole;
 
 @Component
@@ -56,12 +59,12 @@ public class ReadaholicComponent implements SmellDetector {
 		componentMethodRef.preOrder(id -> {
 			CKClassResultSpringBatch classRef = ckResults.get(id);
 			
-			if(classRef.getMaxSqlComplexity() > 0) {
+			if(getTotalReaderQueries(classRef.getSqlQueries()) > 0) {
 				totalOfAccess.add(1);
 			}
 			
 			classRef.getMethods().forEach(method -> {
-				if(((CKMethodResultSpringBatch) method).getMaxSqlComplexity() > 0) {
+				if(getTotalReaderQueries(((CKMethodResultSpringBatch) method).getSqlQueries()) > 0) {
 					totalOfAccess.add(1);
 				}
 			});
@@ -70,12 +73,26 @@ public class ReadaholicComponent implements SmellDetector {
 		
 		return totalOfAccess.size();
 	}
+	
+	private int getTotalReaderQueries(Set<UUID> queries) {
+		SQLQueriesFinder sqlFinder = SQLQueriesFinder.getLoadedInstance();
+		int totalReaderQueries = 0;
+		
+		for(UUID key : queries){
+			SQLQuery query = sqlFinder.getQueries().get(key);
+						
+			if(query != null)
+				totalReaderQueries += query.getType() == SQLQueryType.READ_SQL ? 1 : 0; 
+		}
+		
+		return totalReaderQueries;
+	}
 
 	private int calculateComponentDatabaseAccess(UUID component) {
-		int totalOfAccess = ckResults.get(component).getMaxSqlComplexity() > 0 ? 1 : 0;
+		int totalOfAccess = getTotalReaderQueries(ckResults.get(component).getSqlQueries());
 		
 		for(CKMethodResult method : ckResults.get(component).getMethods()) {
-			totalOfAccess += ((CKMethodResultSpringBatch) method).getMaxSqlComplexity() > 0 ? 1 : 0;
+			totalOfAccess += getTotalReaderQueries(((CKMethodResultSpringBatch) method).getSqlQueries());
 		}
 		
 		return totalOfAccess;
@@ -94,8 +111,8 @@ public class ReadaholicComponent implements SmellDetector {
 			Set<UUID> childsRef = CouplingUtils.getLoadedInstance().getClassCoupling(id);
 			numberDatabaseAccess += calculateClassDatabaseAccess(childsRef);
 
-			if (ckResults.get(id) != null && !ckResults.get(id).getSqlQueries().isEmpty()) {
-				numberDatabaseAccess += 1;
+			if (ckResults.get(id) != null) {
+				numberDatabaseAccess += getTotalReaderQueries(ckResults.get(id).getSqlQueries());
 			}
 		}
 

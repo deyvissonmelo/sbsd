@@ -79,7 +79,7 @@ public class AmateurWriter implements SmellDetector {
 		Set<UUID> components = new HashSet<>();
 
 		ckResults.values().forEach(r -> {
-			if (!r.getBatchRole().contains(BatchRole.WRITER)) {
+			if (r.getBatchRole().contains(BatchRole.PROCESSOR) || r.getBatchRole().contains(BatchRole.READER)) {
 				components.add(r.getId());
 			}
 		});
