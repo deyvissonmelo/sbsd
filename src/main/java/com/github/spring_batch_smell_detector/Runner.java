@@ -2,6 +2,7 @@ package com.github.spring_batch_smell_detector;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -106,15 +107,16 @@ public class Runner implements CommandLineRunner {
 		});
 
 		Map<UUID, Set<UUID>> classCouplingTree = CouplingUtils.initialize(ckResults).getCouplingClassMap();
-		
+
 		if (verbose) {
-			printSQLQueries(ckResults);
-			printDataBaseReaders(ckResults);
-			System.out.println("*************************CLASS COUPLING******************************");
-			printCoupling(ckResults, classCouplingTree);
-			System.out.println();
+			// printSQLQueries(ckResults);
+			// printDataBaseReaders(ckResults);
+			// System.out.println("*************************CLASS
+			// COUPLING******************************");
+			// printCoupling(ckResults, classCouplingTree);
+			// System.out.println();
 			System.out.println("*************************CLASS METHOD COUPLING******************************");
-			printCouplingMethods(CouplingUtils.getLoadedInstance().getCouplingMethodMap(), 0);
+			printCouplingMethods(CouplingUtils.getLoadedInstance().getCouplingMethodMap().values(), 0);
 		}
 
 		Set<UUID> awResult = amateurWriter.analyse(ckResults);
@@ -145,10 +147,12 @@ public class Runner implements CommandLineRunner {
 
 	}
 
-	private void calculateMetrics(String[] args, boolean verbose) throws ParserConfigurationException, SAXException, IOException {
+	private void calculateMetrics(String[] args, boolean verbose)
+			throws ParserConfigurationException, SAXException, IOException {
 		if (args == null || args.length < 3) {
 			System.out.println("Informe os parâmetros de execução");
-			System.out.println("java -jar spring_batch_smell_detector -s <project_path> <job_file_path> <query_fle_path>");
+			System.out.println(
+					"java -jar spring_batch_smell_detector -s <project_path> <job_file_path> <query_fle_path>");
 			System.exit(1);
 		}
 
@@ -160,10 +164,10 @@ public class Runner implements CommandLineRunner {
 						CSVFormat.DEFAULT.withHeader(FILE_METRIC_HEADER));) {
 			ck.calculate(args[0], args[1], args[2], result -> {
 				try {
-					if(verbose) {
+					if (verbose) {
 						printStatistics(result);
 					}
-					
+
 					classPrinter.printRecord(result.getFile(), result.getClassName(), result.getBatchRole(),
 							result.getLoc(), result.getLcom(), result.getWmc(), result.getMaxNestedBlocks(),
 							result.getCoupling().size(), result.getMaxSqlComplexity());
@@ -183,10 +187,10 @@ public class Runner implements CommandLineRunner {
 						CSVFormat.DEFAULT.withHeader(FILE_QUERY_METRIC_HEADER));) {
 			SQLQueriesFinder.getLoadedInstance().getQueries().forEach((id, query) -> {
 				try {
-					if(verbose) {
+					if (verbose) {
 						printQueryStatistics(query);
 					}
-					
+
 					queryPrinter.printRecord(query.getFilePath(), query.getFileType(), query.getFileKey(),
 							query.getType(), query.getComplexity());
 				} catch (IOException e) {
@@ -205,7 +209,7 @@ public class Runner implements CommandLineRunner {
 		System.out.println(String.format("File: %s", result.getFilePath()));
 		System.out.println(String.format("File Key: %s", result.getFileKey()));
 		System.out.println(String.format("File Type: %s", result.getFileType()));
-		System.out.println(String.format("Query Tyoe: %s", result.getType()));		
+		System.out.println(String.format("Query Tyoe: %s", result.getType()));
 		System.out.println(String.format("SQL Complexity: %s", result.getComplexity()));
 		System.out.println("------------------------------------");
 		System.out.println();
@@ -243,21 +247,30 @@ public class Runner implements CommandLineRunner {
 		});
 	}
 
-	private void printCouplingMethods(Map<UUID, MethodCouplingComposite> couplingMethodMap, int tabLevel) {
+	private void printCouplingMethods(Collection<MethodCouplingComposite> couplings, int tabLevel) {
 		final String tab = "\t".repeat(tabLevel);
 
-		if (couplingMethodMap == null)
+		if (couplings == null)
 			return;
 
-		couplingMethodMap.forEach((classId, coupling) -> {
+		couplings.forEach(coupling -> {
+			UUID classId = coupling.getClassId();
+
 			System.out.println(tab + "Id: " + classId);
 			System.out.println(tab + "Class: " + ckResults.get(classId).getClassName());
 			System.out.println(tab + "Batch Role: " + ckResults.get(classId).getBatchRole());
+			System.out.println(tab + "Number of Methods: " + coupling.getMethods().size());
 			System.out.println(tab + "----------------------------------------------");
 			coupling.getMethods().forEach((methodId, methodCouplings) -> {
 				System.out.println(
 						tab + "\tMethod: " + ckResults.get(classId).getMethodById(methodId).get().getMethodName());
-				printCouplingMethods(methodCouplings, tabLevel + 1);
+
+				if (methodCouplings.size() > 0) {
+					System.out.println(tab + "\tCouplings (" + methodCouplings.size() + " classes):");
+					System.out.println(tab + "\t----------------------------------------------");
+
+					printCouplingMethods(methodCouplings, tabLevel + 2);
+				}
 			});
 			System.out.println();
 		});
