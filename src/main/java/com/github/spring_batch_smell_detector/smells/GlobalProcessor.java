@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.stereotype.Component;
 
@@ -19,6 +21,7 @@ import com.github.spring_batch_smell_detector.metrics.CKMethodResultSpringBatch;
 import com.github.spring_batch_smell_detector.metrics.util.CouplingUtils;
 import com.github.spring_batch_smell_detector.metrics.util.MethodCouplingComposite;
 import com.github.spring_batch_smell_detector.model.BatchRole;
+import com.google.common.collect.Multiset.Entry;
 
 @Component
 public class GlobalProcessor implements SmellDetector {
@@ -69,9 +72,14 @@ public class GlobalProcessor implements SmellDetector {
 				}
 				
 				UUID methodId = ((CKMethodResultSpringBatch) method).getId();
-				methodReferences.put(methodId, extractMethodReferences(service.getId(), methodId));
+				
+				Set<UUID> references = extractMethodReferences(service.getId(), methodId);
+				
+				if(references != null && references.size() > 0) {
+					methodReferences.put(methodId, references);
+				}
 			});
-
+			
 			statistics.add(new GlobalProcessorStatistics(service.getId(), classReferences, methodReferences));
 		});
 
