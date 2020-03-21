@@ -40,7 +40,7 @@ public class BrainService implements SmellDetector{
 				boolean isMaxNestingHigh = classResult.getMaxNestedBlocks() > maxNeasting.getAverage();
 				boolean isLowCoesion = classResult.getLcom() > lcom.getAverage();
 				
-				boolean isAffected = isMethodLong && (isWMCHigh || isMaxNestingHigh) && isLowCoesion;
+				boolean isAffected = isMethodLong && (isWMCHigh || isMaxNestingHigh || isLowCoesion);
 				
 				if(isAffected) {
 					affectedClasses.add(classResult.getId());

@@ -33,10 +33,10 @@ public class BrainWriter implements SmellDetector {
 		if(results == null || results.isEmpty())
 			throw new RuntimeException("O resultado da análise das métricas não foi informado.");
 		
-		MetricStatistics loc = threshoulds.getThreshoulds(BatchRole.READER, Metrics.LOC);
-		MetricStatistics wmc = threshoulds.getThreshoulds(BatchRole.READER, Metrics.WMC);
-		MetricStatistics maxNeasting = threshoulds.getThreshoulds(BatchRole.READER, Metrics.MAXNESTING);
-		MetricStatistics sqlComplexity = threshoulds.getThreshoulds(BatchRole.READER, Metrics.SQL_COMPLEXITY);
+		MetricStatistics loc = threshoulds.getThreshoulds(BatchRole.WRITER, Metrics.LOC);
+		MetricStatistics wmc = threshoulds.getThreshoulds(BatchRole.WRITER, Metrics.WMC);
+		MetricStatistics maxNeasting = threshoulds.getThreshoulds(BatchRole.WRITER, Metrics.MAXNESTING);
+		MetricStatistics sqlComplexity = threshoulds.getThreshoulds(BatchRole.WRITER, Metrics.SQL_COMPLEXITY);
 		
 		final Set<UUID> affectedClasses = new HashSet<>();
 

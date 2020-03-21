@@ -109,12 +109,11 @@ public class Runner implements CommandLineRunner {
 		Map<UUID, Set<UUID>> classCouplingTree = CouplingUtils.initialize(ckResults).getCouplingClassMap();
 
 		if (verbose) {
-			// printSQLQueries(ckResults);
-			// printDataBaseReaders(ckResults);
-			// System.out.println("*************************CLASS
-			// COUPLING******************************");
-			// printCoupling(ckResults, classCouplingTree);
-			// System.out.println();
+			printSQLQueries(ckResults);
+			printDataBaseReaders(ckResults);
+			System.out.println("*************************CLASSCOUPLING******************************");
+			printCoupling(ckResults, classCouplingTree);
+			System.out.println();
 			System.out.println("*************************CLASS METHOD COUPLING******************************");
 			printCouplingMethods(CouplingUtils.getLoadedInstance().getCouplingMethodMap().values(), 0);
 		}
