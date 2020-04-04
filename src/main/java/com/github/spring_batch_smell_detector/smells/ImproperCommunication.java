@@ -62,9 +62,6 @@ public class ImproperCommunication implements SmellDetector {
 			if (hasArchtecturalRole(id)) {
 				numberOfCommunications++;
 			}
-
-			numberOfCommunications += verifyClassImproperCommunication(
-					CouplingUtils.getLoadedInstance().getClassCoupling(id));
 		}
 
 		return numberOfCommunications;

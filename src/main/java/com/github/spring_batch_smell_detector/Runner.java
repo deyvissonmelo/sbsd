@@ -155,7 +155,7 @@ public class Runner implements CommandLineRunner {
 			System.exit(1);
 		}
 
-		final String[] FILE_METRIC_HEADER = { "file", "class", "role", "loc", "lcom", "wmc", "maxNeasting", "ficp",
+		final String[] FILE_METRIC_HEADER = { "file", "class", "role", "methods", "loc", "lcom", "wmc", "maxNeasting", "ficp",
 				"sqlComplexity" };
 
 		try (final FileWriter writer = new FileWriter("metrics.csv");
@@ -168,6 +168,7 @@ public class Runner implements CommandLineRunner {
 					}
 
 					classPrinter.printRecord(result.getFile(), result.getClassName(), result.getBatchRole(),
+							result.getNumberOfMethods(),
 							result.getLoc(), result.getLcom(), result.getWmc(), result.getMaxNestedBlocks(),
 							result.getCoupling().size(), result.getMaxSqlComplexity());
 				} catch (IOException e) {

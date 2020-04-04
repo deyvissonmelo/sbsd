@@ -36,13 +36,11 @@ public class ReadaholicComponent implements SmellDetector {
 		ckResults = results;
 		
 		components.forEach(component -> {			
-			
-			Set<UUID> componentClassRef = CouplingUtils.getLoadedInstance().getClassCoupling(component);
+						
 			MethodCouplingComposite componentMethodRef = CouplingUtils.getLoadedInstance().getMethodCoupling(component);		
 			
 			int totalOfAccess = calculateComponentDatabaseAccess(component);
 			
-			totalOfAccess += calculateClassDatabaseAccess(componentClassRef);
 			totalOfAccess += calculateMethodDatabaseAccess(componentMethodRef);
 
 			if (totalOfAccess > 0) {
@@ -96,27 +94,6 @@ public class ReadaholicComponent implements SmellDetector {
 		}
 		
 		return totalOfAccess;
-	}
-
-
-
-	private int calculateClassDatabaseAccess(Set<UUID> componentRef) {
-		int numberDatabaseAccess = 0;
-
-		if (componentRef.isEmpty()) {
-			return 0;
-		}
-
-		for (UUID id : componentRef) {
-			Set<UUID> childsRef = CouplingUtils.getLoadedInstance().getClassCoupling(id);
-			numberDatabaseAccess += calculateClassDatabaseAccess(childsRef);
-
-			if (ckResults.get(id) != null) {
-				numberDatabaseAccess += getTotalReaderQueries(ckResults.get(id).getSqlQueries());
-			}
-		}
-
-		return numberDatabaseAccess;
 	}
 
 	private Set<UUID> extractComponents(Collection<CKClassResultSpringBatch> results) {
