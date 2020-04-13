@@ -88,6 +88,7 @@ public class Runner implements CommandLineRunner {
 		Options opt = new Options();
 		opt.addOption(new Option("s", false, "Calculate statistics"));
 		opt.addOption(new Option("v", false, "Verbose"));
+		opt.addOption(new Option("b", false, "Batch"));
 
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd = parser.parse(opt, args);
@@ -95,11 +96,11 @@ public class Runner implements CommandLineRunner {
 		if (cmd.hasOption("s")) {
 			calculateMetrics(cmd.getArgs(), cmd.hasOption('v'));
 		} else {
-			analyseProject(cmd.getArgs(), cmd.hasOption('v'));
+			analyseProject(cmd.getArgs(), cmd.hasOption('v'), cmd.hasOption('b'));
 		}
 	}
 
-	private void analyseProject(String[] args, boolean verbose)
+	private void analyseProject(String[] args, boolean verbose, boolean batch)
 			throws ParserConfigurationException, SAXException, IOException {
 
 		ck.calculate(args[0], args[1], args[2], result -> {
@@ -144,6 +145,48 @@ public class Runner implements CommandLineRunner {
 				.addReportSection(SmellType.IMPROPER_COMMUNICATION, icResult)
 				.addReportSection(SmellType.READAHOLIC_COMPONENT, rcResult).print();
 
+		if (batch) {
+			Map<Class, Set<UUID>> results = new HashMap<Class, Set<UUID>>();
+
+			results.put(AmateurWriter.class, awResult);
+			results.put(BrainReader.class, brResult);
+			results.put(BrainProcessor.class, bpResult);
+			results.put(BrainService.class, bsResult);
+			results.put(BrainWriter.class, bwResult);
+			results.put(GlobalProcessor.class, gpResult);
+			results.put(ReadaholicComponent.class, rcResult);
+			results.put(ImproperCommunication.class, icResult);
+
+			registerExecution(results);
+		}
+
+	}
+
+	private void registerExecution(Map<Class, Set<UUID>> results) throws IOException {
+		final String[] FILE_EXECUTION_HEADER = { "file", "class", "smell" };
+
+		try (final FileWriter writer = new FileWriter("execution.csv");
+				final CSVPrinter printer = new CSVPrinter(writer,
+						CSVFormat.DEFAULT.withHeader(FILE_EXECUTION_HEADER));) {
+			results.forEach((smellClass, smellResults) -> {
+
+				smellResults.forEach(id -> {
+					CKClassResultSpringBatch ckClassResult = CouplingUtils.getLoadedInstance().getCKClassResult(id);
+
+					if (ckClassResult != null) {
+						try {
+							printer.printRecord(ckClassResult.getFile(), ckClassResult.getClassName(),
+									smellClass.getSimpleName());
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
+
+			});
+
+			printer.flush();
+		}
 	}
 
 	private void calculateMetrics(String[] args, boolean verbose)
@@ -155,8 +198,8 @@ public class Runner implements CommandLineRunner {
 			System.exit(1);
 		}
 
-		final String[] FILE_METRIC_HEADER = { "file", "class", "role", "methods", "loc", "lcom", "wmc", "maxNeasting", "ficp",
-				"sqlComplexity" };
+		final String[] FILE_METRIC_HEADER = { "file", "class", "role", "methods", "loc", "lcom", "wmc", "maxNeasting",
+				"ficp", "sqlComplexity" };
 
 		try (final FileWriter writer = new FileWriter("metrics.csv");
 				final CSVPrinter classPrinter = new CSVPrinter(writer,
@@ -168,9 +211,8 @@ public class Runner implements CommandLineRunner {
 					}
 
 					classPrinter.printRecord(result.getFile(), result.getClassName(), result.getBatchRole(),
-							result.getNumberOfMethods(),
-							result.getLoc(), result.getLcom(), result.getWmc(), result.getMaxNestedBlocks(),
-							result.getCoupling().size(), result.getMaxSqlComplexity());
+							result.getNumberOfMethods(), result.getLoc(), result.getLcom(), result.getWmc(),
+							result.getMaxNestedBlocks(), result.getCoupling().size(), result.getMaxSqlComplexity());
 				} catch (IOException e) {
 					System.out.println("Ocorreu um erro ao criar os arquivo de métricas");
 					e.printStackTrace();

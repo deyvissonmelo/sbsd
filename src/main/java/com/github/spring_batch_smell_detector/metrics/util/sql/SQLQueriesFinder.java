@@ -1,5 +1,6 @@
 package com.github.spring_batch_smell_detector.metrics.util.sql;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -71,7 +72,13 @@ public class SQLQueriesFinder {
 	}
 
 	private void loadJobFile(String jobFilePath)
-			throws ParserConfigurationException, SAXException, IOException {				
+			throws ParserConfigurationException, SAXException, IOException {
+		
+		File fileQuery = new File(jobFilePath);
+		
+		if(!fileQuery.exists())
+			return;
+		
 		Document doc = XMLFileReader.readXmlFile(jobFilePath);
 
 		NodeList elements = doc.getElementsByTagName("bean");
@@ -106,6 +113,12 @@ public class SQLQueriesFinder {
 
 	private void loadAlternativeFileQueries(String alternativeQueryFilePath)
 			throws ParserConfigurationException, SAXException, IOException {
+		
+		File fileQuery = new File(alternativeQueryFilePath);
+		
+		if(!fileQuery.exists())
+			return;
+		
 		Document doc = XMLFileReader.readXmlFile(alternativeQueryFilePath);
 
 		NodeList elements = doc.getElementsByTagName("entry");

@@ -156,8 +156,13 @@ public class CouplingUtils {
 	}
 
 	private Set<MethodCouplingComposite> extractMethodCouplings(CKMethodResultSpringBatch invokerMethod) {
+		return extractMethodCouplings(invokerMethod, null, 0);
+	}
+
+	private Set<MethodCouplingComposite> extractMethodCouplings(CKMethodResultSpringBatch invokedMethod,
+			CKMethodResultSpringBatch parentMethod, int depthLevel) {
 		Set<MethodCouplingComposite> calledMethods = new HashSet<>();
-		int couplingCount = invokerMethod.getMethodInvokeCoupling().size();
+		int couplingCount = invokedMethod.getMethodInvokeCoupling().size();
 
 		if(couplingCount == 0) {
 			return calledMethods;
@@ -168,16 +173,18 @@ public class CouplingUtils {
 				break;
 			}
 
-//			if (entry.getKey().equals(invokerId)) {
-//				continue;
-//			}
-
 			for (CKMethodResult entryMethod : entry.getValue().getMethods()) {
+						
+				if(parentMethod != null) {
+					if(((CKMethodResultSpringBatch) entryMethod).getId().equals(parentMethod.getId()))
+						continue;
+				}
+				
 				String className = entry.getValue().getClassName();
 				String methodName = extractMethodName(entryMethod.getMethodName());
 				String fullMethodName = className + ":" + methodName;
-
-				boolean isCoupling = invokerMethod.getMethodInvokeCoupling().stream()
+				
+				boolean isCoupling = invokedMethod.getMethodInvokeCoupling().stream()
 						.anyMatch(c -> c.equals(fullMethodName));
 
 				if (isCoupling) {
@@ -193,7 +200,16 @@ public class CouplingUtils {
 						calledMethods.add(targetCoupling.get());						
 					}
 					
-					targetCoupling.get().getMethods().put(methodKey, extractMethodCouplings(((CKMethodResultSpringBatch) entryMethod)));
+					if(depthLevel <= 50) {						
+						targetCoupling.get().getMethods().put(
+								methodKey, 
+								extractMethodCouplings(
+										(CKMethodResultSpringBatch) entryMethod,
+										(CKMethodResultSpringBatch) invokedMethod,
+										++depthLevel
+								)
+						);
+					}
 
 					--couplingCount;						
 				}

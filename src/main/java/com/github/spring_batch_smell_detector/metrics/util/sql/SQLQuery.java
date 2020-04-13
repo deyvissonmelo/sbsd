@@ -9,10 +9,10 @@ import com.google.common.base.Strings;
 
 public class SQLQuery {
 
-	private static final String[] SQL_KEYWORDS = { " AND ", "BETWEEN", "CASE", "DELETE", "DESC", "DISTINCT", "EXISTS",
-			"FROM", "FULL", "GROUP", "HAVING", " IN ", "INNER", "INSERT", "INTO", "NULL", "NOT ", "JOIN", "LEFT",
-			"LIKE", "LIMIT ", " OR ", "ORDER ", "OUTER ", "RIGTH ", "ROWNUM ", "SELECT", "TOP ", "UNION", "UPDATE", "VALUES",
-			"WHERE", ">", "<", "=" };
+	private static final String[] SQL_KEYWORDS = { " AND ", "BETWEEN ", "CASE ", "DELETE ", " DESC", " DISTINCT ", "EXISTS ",
+			"FROM ", "FULL ", "GROUP ", "HAVING ", " IN ", "INNER ", "INSERT ", " INTO ", " NULL", "NOT ", "JOIN ", "LEFT ",
+			"LIKE ", "LIMIT ", " OR ", "ORDER ", "OUTER ", "RIGTH ", "ROWNUM ", "SELECT ", "TOP ", "UNION", "UPDATE ", "VALUES ",
+			"WHERE " };
 	
 	private static final String[] SQL_WRITER_KEYWORDS = {"INSERT", "UPDATE", "DELETE"};
 	
