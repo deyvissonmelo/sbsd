@@ -200,7 +200,7 @@ public class CouplingUtils {
 						calledMethods.add(targetCoupling.get());						
 					}
 					
-					if(depthLevel <= 50) {						
+					if(depthLevel <= 100) {						
 						targetCoupling.get().getMethods().put(
 								methodKey, 
 								extractMethodCouplings(
