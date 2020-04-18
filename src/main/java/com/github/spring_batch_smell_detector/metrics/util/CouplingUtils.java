@@ -1,11 +1,14 @@
 package com.github.spring_batch_smell_detector.metrics.util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.github.mauricioaniche.ck.CKMethodResult;
 import com.github.spring_batch_smell_detector.metrics.CKClassResultSpringBatch;
@@ -156,16 +159,27 @@ public class CouplingUtils {
 	}
 
 	private Set<MethodCouplingComposite> extractMethodCouplings(CKMethodResultSpringBatch invokerMethod) {
-		return extractMethodCouplings(invokerMethod, null, 0);
+		return extractMethodCouplings(invokerMethod, null);
 	}
-
+	
 	private Set<MethodCouplingComposite> extractMethodCouplings(CKMethodResultSpringBatch invokedMethod,
-			CKMethodResultSpringBatch parentMethod, int depthLevel) {
+			List<UUID> chainCalledMethods) {
 		Set<MethodCouplingComposite> calledMethods = new HashSet<>();
 		int couplingCount = invokedMethod.getMethodInvokeCoupling().size();
 
 		if(couplingCount == 0) {
 			return calledMethods;
+		}
+		
+		if(chainCalledMethods == null) {
+			chainCalledMethods = new ArrayList<UUID>();
+		}
+		
+		if(chainCalledMethods.contains(invokedMethod.getId())) {
+			return calledMethods;
+		}
+		else {
+			chainCalledMethods.add(invokedMethod.getId());
 		}
 		
 		for (Map.Entry<UUID, CKClassResultSpringBatch> entry : ckResults.entrySet()) {
@@ -175,9 +189,8 @@ public class CouplingUtils {
 
 			for (CKMethodResult entryMethod : entry.getValue().getMethods()) {
 						
-				if(parentMethod != null) {
-					if(((CKMethodResultSpringBatch) entryMethod).getId().equals(parentMethod.getId()))
-						continue;
+				if(chainCalledMethods.contains(((CKMethodResultSpringBatch)entryMethod).getId())) {
+					continue;
 				}
 				
 				String className = entry.getValue().getClassName();
@@ -199,19 +212,19 @@ public class CouplingUtils {
 						targetCoupling = Optional.of(new MethodCouplingComposite(entry.getKey()));						
 						calledMethods.add(targetCoupling.get());						
 					}
-					
-					if(depthLevel <= 100) {						
-						targetCoupling.get().getMethods().put(
-								methodKey, 
-								extractMethodCouplings(
-										(CKMethodResultSpringBatch) entryMethod,
-										(CKMethodResultSpringBatch) invokedMethod,
-										++depthLevel
-								)
-						);
-					}
+									
+					targetCoupling.get().getMethods().put(
+							methodKey, 
+							extractMethodCouplings(
+									(CKMethodResultSpringBatch) entryMethod,
+									chainCalledMethods
+							)
+					);					
 
-					--couplingCount;						
+					--couplingCount;
+					
+					int index = chainCalledMethods.indexOf(invokedMethod.getId());
+					chainCalledMethods = chainCalledMethods.subList(0, index + 1);
 				}
 			}
 		}
