@@ -23,24 +23,25 @@ import com.github.spring_batch_smell_detector.metrics.util.sql.SQLQueryFileType;
 
 public class SQLComplexity extends ASTVisitor implements ClassLevelMetric, MethodLevelMetric {
 
-	Set<UUID> sqlQueries = new HashSet<>();	
+	Set<UUID> sqlQueries = new HashSet<>();
 	List<Integer> sqlComplexities = new ArrayList<>();
 
 	@Override
 	public boolean visit(StringLiteral node) {
 		SQLQueriesFinder sqlFinder = SQLQueriesFinder.getLoadedInstance();
-		
+
 		String varValue = node.getEscapedValue().replace("\"", "");
-		Optional<SQLQuery> sqlQuery = sqlFinder.findByFileKey(varValue);				
-		
+		Optional<SQLQuery> sqlQuery = sqlFinder.findByFileKey(varValue);
+
 		if (sqlQuery.isPresent()) {
 			sqlQueries.add(sqlQuery.get().getId());
 			sqlComplexities.add(sqlQuery.get().getComplexity());
-		}
-		else {
-			int complexity = SQLQuery.calculateSQlComplexity(varValue);
 			
-			if(complexity > 0) {				
+		} else if (SQLQuery.isSQLValid(varValue)) {
+			
+			int complexity = SQLQuery.calculateSQlComplexity(varValue);
+
+			if (complexity > 0) {
 				String id = "String.Literal$" + UUID.randomUUID();
 				sqlQueries.add(sqlFinder.addQuery(id, varValue, SQLQueryFileType.STRING_LITERAL, "STRING_LITERAL"));
 				sqlComplexities.add(complexity);
@@ -53,13 +54,13 @@ public class SQLComplexity extends ASTVisitor implements ClassLevelMetric, Metho
 	@Override
 	public void setResult(CKClassResult result) {
 		if (result instanceof CKClassResultSpringBatch) {
-			((CKClassResultSpringBatch) result).setSqlQueries(sqlQueries);						
+			((CKClassResultSpringBatch) result).setSqlQueries(sqlQueries);
 			((CKClassResultSpringBatch) result).setMaxSqlComplexity(calculateSQLComplexity());
 		}
 	}
 
-	private int calculateSQLComplexity() {				
-		OptionalInt max = sqlComplexities.stream().mapToInt(value -> value).max();		
+	private int calculateSQLComplexity() {
+		OptionalInt max = sqlComplexities.stream().mapToInt(value -> value).max();
 		return max.isPresent() ? max.getAsInt() : 0;
 	}
 
