@@ -98,7 +98,7 @@ public class SQLQuery {
 	}
 
 	public static SQLQueryType getQueryType(String query) {
-		if (Stream.of(SQL_WRITER_KEYWORDS).anyMatch(sqlKeyword -> query.contains(sqlKeyword))) {
+		if (Stream.of(SQL_WRITER_KEYWORDS).anyMatch(sqlKeyword -> query.toUpperCase().contains(sqlKeyword))) {
 			return SQLQueryType.WRITE_SQL;
 		} else {
 			return SQLQueryType.READ_SQL;
