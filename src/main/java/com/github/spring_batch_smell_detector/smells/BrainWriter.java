@@ -36,7 +36,7 @@ public class BrainWriter implements SmellDetector {
 		MetricStatistics loc = threshoulds.getThreshoulds(BatchRole.WRITER, Metrics.LOC);
 		MetricStatistics wmc = threshoulds.getThreshoulds(BatchRole.WRITER, Metrics.WMC);
 		MetricStatistics maxNeasting = threshoulds.getThreshoulds(BatchRole.WRITER, Metrics.MAXNESTING);
-		MetricStatistics sqlComplexity = threshoulds.getThreshoulds(BatchRole.WRITER, Metrics.SQL_COMPLEXITY);
+		MetricStatistics sqlComplexity_writer = threshoulds.getThreshoulds(BatchRole.WRITER, Metrics.SQL_COMPLEXITY_WRITE);
 		
 		final Set<UUID> affectedClasses = new HashSet<>();
 
@@ -54,7 +54,7 @@ public class BrainWriter implements SmellDetector {
 					maxSqlComplexity = maxSqlComplexity < methodSQLComplexity ? methodSQLComplexity : maxSqlComplexity;
 				}
 
-				boolean isSQLHigh = maxSqlComplexity > sqlComplexity.getAverage();
+				boolean isSQLHigh = maxSqlComplexity > sqlComplexity_writer.getAverage();
 
 				boolean isAffected = (isMethodLong && (isWMCHigh || isMaxNestingHigh)) || isSQLHigh;
 				
@@ -64,7 +64,7 @@ public class BrainWriter implements SmellDetector {
 			}
 		});
 		
-		affectedClasses.addAll(analyseJobQueries(sqlComplexity.getAverage()));
+		affectedClasses.addAll(analyseJobQueries(sqlComplexity_writer.getAverage()));
 		
 		return affectedClasses;
 	}

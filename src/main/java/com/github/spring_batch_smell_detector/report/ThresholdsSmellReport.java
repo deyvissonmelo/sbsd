@@ -46,7 +46,8 @@ public class ThresholdsSmellReport implements SmellReport {
 		MetricStatistics wmc = thresholds.getThreshoulds(role, Metrics.WMC);
 		MetricStatistics maxNeasting = thresholds.getThreshoulds(role, Metrics.MAXNESTING);
 		MetricStatistics ficp = thresholds.getThreshoulds(role, Metrics.FICP);
-		MetricStatistics sqlComplexity = thresholds.getThreshoulds(role, Metrics.SQL_COMPLEXITY);
+		MetricStatistics sqlComplexity_read = thresholds.getThreshoulds(role, Metrics.SQL_COMPLEXITY_READ);
+		MetricStatistics sqlComplexity_write = thresholds.getThreshoulds(role, Metrics.SQL_COMPLEXITY_WRITE);
 		
 		writer.println("ROLE: " + role);
 		writer.println("--------------------------------");
@@ -111,15 +112,29 @@ public class ThresholdsSmellReport implements SmellReport {
 		writer.println();
 		writer.println();
 		
-		writer.println("SQL_COMPLEXITY");
+		writer.println("SQL_COMPLEXITY_READ");
 		writer.println("-------------------------");
 		writer.print(Strings.padEnd("LOWER", 10, ' '));
 		writer.print(Strings.padEnd("AVERAGE", 10, ' '));
 		writer.print(Strings.padEnd("HIGHER", 10, ' '));
 		writer.println();
-		writer.print(Strings.padEnd(String.format("%.2f", sqlComplexity.getLower()), 10, ' '));
-		writer.print(Strings.padEnd(String.format("%.2f", sqlComplexity.getAverage()), 10, ' '));
-		writer.print(Strings.padEnd(String.format("%.2f", sqlComplexity.getHigher()), 10, ' '));
+		writer.print(Strings.padEnd(String.format("%.2f", sqlComplexity_read.getLower()), 10, ' '));
+		writer.print(Strings.padEnd(String.format("%.2f", sqlComplexity_read.getAverage()), 10, ' '));
+		writer.print(Strings.padEnd(String.format("%.2f", sqlComplexity_read.getHigher()), 10, ' '));
+		writer.println();
+		writer.println("------------------------------------");
+		writer.println();
+		writer.println();
+		
+		writer.println("SQL_COMPLEXITY_WRITE");
+		writer.println("-------------------------");
+		writer.print(Strings.padEnd("LOWER", 10, ' '));
+		writer.print(Strings.padEnd("AVERAGE", 10, ' '));
+		writer.print(Strings.padEnd("HIGHER", 10, ' '));
+		writer.println();
+		writer.print(Strings.padEnd(String.format("%.2f", sqlComplexity_write.getLower()), 10, ' '));
+		writer.print(Strings.padEnd(String.format("%.2f", sqlComplexity_write.getAverage()), 10, ' '));
+		writer.print(Strings.padEnd(String.format("%.2f", sqlComplexity_write.getHigher()), 10, ' '));
 		writer.println();
 		writer.println("------------------------------------");
 		writer.println();

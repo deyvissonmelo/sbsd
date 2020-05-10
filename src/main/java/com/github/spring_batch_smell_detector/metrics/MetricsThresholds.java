@@ -10,7 +10,7 @@ import com.github.spring_batch_smell_detector.model.Metrics;
 import com.github.spring_batch_smell_detector.statistics.MetricStatistics;
 
 @Component
-@PropertySource("classpath:metric_statistics.properties")
+@PropertySource("classpath:metric_statistics_metodo_02.properties")
 public class MetricsThresholds {
 
 	private final String ROLE_READER_KEY = "reader.statistic";
@@ -31,7 +31,9 @@ public class MetricsThresholds {
 	
 	private final String METRIC_FICP_KEY = "ficp";
 	
-	private final String METRIC_SQL_COMPLEXITY_KEY = "sqlcomplexity";
+	private final String METRIC_SQL_COMPLEXITY_READ_KEY = "sqlcomplexity_read";
+	
+	private final String METRIC_SQL_COMPLEXITY_WRITE_KEY = "sqlcomplexity_write";
 	
 	private final String STATISTIC_LOWER = "lower";
 	
@@ -78,8 +80,10 @@ public class MetricsThresholds {
 			return METRIC_WMC_KEY;
 		case FICP:
 			return METRIC_FICP_KEY;
-		case SQL_COMPLEXITY:
-			return METRIC_SQL_COMPLEXITY_KEY;
+		case SQL_COMPLEXITY_READ:
+			return METRIC_SQL_COMPLEXITY_READ_KEY;
+		case SQL_COMPLEXITY_WRITE:
+			return METRIC_SQL_COMPLEXITY_WRITE_KEY;
 		default:
 			throw new RuntimeException("Métrica informada não pertence ao arquivo de threshoulds");
 		}
