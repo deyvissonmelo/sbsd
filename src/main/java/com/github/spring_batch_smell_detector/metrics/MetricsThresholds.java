@@ -41,6 +41,8 @@ public class MetricsThresholds {
 	
 	private final String STATISTIC_AVERAGE = "average";
 	
+	private final String READAHOLIC_MAX_READING = "readaholic.max.reading";
+	
 	
 	@Autowired
 	private Environment env;
@@ -66,6 +68,10 @@ public class MetricsThresholds {
 		default:
 			throw new RuntimeException("Papel arquitetural informado não pertence ao arquivo de threshoulds");
 		}
+	}
+	
+	public int getMetricReadaholicMaxReading() {
+		return Integer.valueOf(env.getProperty(READAHOLIC_MAX_READING));
 	}
 
 	private String getMetricKey(Metrics metric) {

@@ -8,11 +8,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.github.mauricioaniche.ck.CKMethodResult;
 import com.github.spring_batch_smell_detector.metrics.CKClassResultSpringBatch;
 import com.github.spring_batch_smell_detector.metrics.CKMethodResultSpringBatch;
+import com.github.spring_batch_smell_detector.metrics.MetricsThresholds;
 import com.github.spring_batch_smell_detector.metrics.util.CouplingUtils;
 import com.github.spring_batch_smell_detector.metrics.util.MethodCouplingComposite;
 import com.github.spring_batch_smell_detector.metrics.util.sql.SQLQueriesFinder;
@@ -22,40 +24,43 @@ import com.github.spring_batch_smell_detector.model.BatchRole;
 
 @Component
 public class ReadaholicComponent implements SmellDetector {
-
-	Map<UUID, CKClassResultSpringBatch> ckResults;
+	
+	@Autowired
+	private MetricsThresholds thresholds;
 	
 	@Override
 	public Set<UUID> analyse(Map<UUID, CKClassResultSpringBatch> results) {
 		final Set<UUID> affectedClasses = new HashSet<>();
-		final Set<UUID> components = extractComponents(results.values());		
-		
+				
 		if(results == null || results.isEmpty())
 			throw new RuntimeException("O resultado da análise das métricas não foi informado.");
 		
-		ckResults = results;
+		final Set<CKClassResultSpringBatch> components = extractComponents(results.values());
+		
+		int maxReading = thresholds.getMetricReadaholicMaxReading();
 		
 		components.forEach(component -> {			
 						
-			MethodCouplingComposite componentMethodRef = CouplingUtils.getLoadedInstance().getMethodCoupling(component);		
+			MethodCouplingComposite componentMethodRef = CouplingUtils.getLoadedInstance().getMethodCoupling(component.getId());		
 			
 			int totalOfAccess = calculateComponentDatabaseAccess(component);
 			
-			totalOfAccess += calculateMethodDatabaseAccess(componentMethodRef);
+			totalOfAccess += calculateMethodDatabaseAccess(componentMethodRef, results);
 
-			if (totalOfAccess > 0) {
-				affectedClasses.add(component);
+			if (totalOfAccess > maxReading) {
+				affectedClasses.add(component.getId());
 			}
 		});
 
 		return affectedClasses;
 	}
 
-	private int calculateMethodDatabaseAccess(MethodCouplingComposite componentMethodRef) {
+	public int calculateMethodDatabaseAccess(MethodCouplingComposite componentMethodRef, 
+			Map<UUID, CKClassResultSpringBatch> results) {
 		List<Integer> totalOfAccess = new ArrayList<>();
 		
 		componentMethodRef.preOrder(id -> {
-			CKClassResultSpringBatch classRef = ckResults.get(id);
+			CKClassResultSpringBatch classRef = results.get(id);
 			
 			if(getTotalReaderQueries(classRef.getSqlQueries()) > 0) {
 				totalOfAccess.add(1);
@@ -86,22 +91,22 @@ public class ReadaholicComponent implements SmellDetector {
 		return totalReaderQueries;
 	}
 
-	private int calculateComponentDatabaseAccess(UUID component) {
-		int totalOfAccess = getTotalReaderQueries(ckResults.get(component).getSqlQueries());
+	public int calculateComponentDatabaseAccess(CKClassResultSpringBatch component) {
+		int totalOfAccess = getTotalReaderQueries(component.getSqlQueries());
 		
-		for(CKMethodResult method : ckResults.get(component).getMethods()) {
+		for(CKMethodResult method : component.getMethods()) {
 			totalOfAccess += getTotalReaderQueries(((CKMethodResultSpringBatch) method).getSqlQueries());
 		}
 		
 		return totalOfAccess;
 	}
 
-	private Set<UUID> extractComponents(Collection<CKClassResultSpringBatch> results) {
-		Set<UUID> components = new HashSet<>();
+	private Set<CKClassResultSpringBatch> extractComponents(Collection<CKClassResultSpringBatch> results) {
+		Set<CKClassResultSpringBatch> components = new HashSet<>();
 
 		results.forEach(r -> {
 			if (r.getBatchRole().contains(BatchRole.PROCESSOR) || r.getBatchRole().contains(BatchRole.WRITER)) {
-				components.add(r.getId());
+				components.add(r);
 			}
 		});
 

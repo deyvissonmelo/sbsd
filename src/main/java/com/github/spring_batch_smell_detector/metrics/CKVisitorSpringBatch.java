@@ -1491,6 +1491,4 @@ public class CKVisitorSpringBatch extends ASTVisitor {
 			classes.peek().methods.peek().methodLevelMetrics.stream().map(metric -> (ASTVisitor) metric)
 					.forEach(ast -> ast.endVisit(node));
 	}
-
-	// TODO: add all other endVisit blocks
 }
