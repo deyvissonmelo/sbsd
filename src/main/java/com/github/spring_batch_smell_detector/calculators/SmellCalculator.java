@@ -136,7 +136,7 @@ public class SmellCalculator {
 	private void registerExecution(Map<Class, Set<UUID>> results) throws IOException {		
 
 		try (
-				final FileWriter writer = new FileWriter("execution.csv");
+				final FileWriter writer = new FileWriter("sbsd_execution.csv");
 				final CSVPrinter printer = new CSVPrinter(writer,
 						CSVFormat.DEFAULT.withHeader(FILE_EXECUTION_HEADER));
 		) {
