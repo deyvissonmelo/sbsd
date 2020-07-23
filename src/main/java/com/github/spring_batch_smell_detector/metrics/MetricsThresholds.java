@@ -10,7 +10,7 @@ import com.github.spring_batch_smell_detector.model.Metrics;
 import com.github.spring_batch_smell_detector.statistics.MetricStatistics;
 
 @Component
-@PropertySource("classpath:metric_statistics_metodo_02.properties")
+@PropertySource("classpath:metric_statistics.properties")
 public class MetricsThresholds {
 
 	private final String ROLE_READER_KEY = "reader.statistic";
