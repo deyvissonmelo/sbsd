@@ -12,11 +12,11 @@ Spring Batch Smell Detector - Program to detect Design Smells specific to the co
 ## Configuring the project:
 ### 1. Edit the application.properties
 * Into directory sbsd/src/main/resources/ open the file application.properties
-* Change the values of the variables batch_role* with the name of the classes or intefaces for each archtectural role:
-  * batch_role_service_classes: Classes or intefaces with archtectural role Service
-  * batch_role_reader_classes: Classes or intefaces with archtectural role Reader
-  * batch_role_writer_classes: Classes or intefaces with archtectural role Writer
-  * batch_role_processor_classes: Classes or intefaces with archtectural role Processor
+* Change the values of the variables batch_role* with the name of the classes or intefaces for each architecture role:
+  * batch_role_service_classes: Classes or intefaces with architecture role Service
+  * batch_role_reader_classes: Classes or intefaces with architecture role Reader
+  * batch_role_writer_classes: Classes or intefaces with architecture role Writer
+  * batch_role_processor_classes: Classes or intefaces with architecture role Processor
 
 > For example:
 
@@ -27,13 +27,13 @@ Spring Batch Smell Detector - Program to detect Design Smells specific to the co
     
 ## 2. Edit the metric files:
 * Into directory sbsd/src/main/resources/ open the file metric_statistics.properties
-* Change the values of the variables according to the archtectural role and the metric.
+* Change the values of the variables according to the architecture role and the metric.
 
 > For example:
 
 > reader.statistic.loc.lower=2.5
 
-* reader.statistic = Reader archtectural role
+* reader.statistic = Reader architecture role
 * loc = Metric line of codes
 * lower = Limit value considered low 
 
